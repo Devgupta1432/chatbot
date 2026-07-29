@@ -94,7 +94,10 @@ if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-const BACKEND_URL = "http://localhost:3001"; // change to deployed URL when live
+const BACKEND_URL =
+  location.hostname === "localhost" || location.hostname === "127.0.0.1"
+    ? "http://localhost:3001"
+    : "https://chatbot-api-68kh.onrender.com"; // change to deployed URL when live
 
 let clientId = "";
 let widgetId = "";
