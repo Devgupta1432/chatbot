@@ -9,7 +9,7 @@ const logger    = require("./logger");
 const { extract, mergeExtracts, getSitemapUrls } = require("./extractor");
 
 const VERSION         = process.env.npm_package_version || "1.0.0";
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").map(o => o.trim()).filter(Boolean);
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "").split(",").map(o => o.trim().replace(/\/$/, "")).filter(Boolean);
 const IS_DEV          = process.env.NODE_ENV !== "production";
 
 const app = express();
