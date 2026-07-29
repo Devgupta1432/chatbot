@@ -1,0 +1,31 @@
+<!-- ═══════════════════════════════════════
+     FAQs SECTION
+════════════════════════════════════════ -->
+<div class="panel-header">
+  <h2>FAQs</h2>
+  <p>The chatbot uses these to answer common visitor questions automatically.</p>
+</div>
+
+<div class="card">
+  <div class="card-title">Add a FAQ</div>
+  <div class="form-grid">
+    <div class="form-group full">
+      <label>Question</label>
+      <input type="text" id="faq-q" placeholder="e.g. Do you offer home delivery?">
+    </div>
+    <div class="form-group full">
+      <label>Answer</label>
+      <textarea id="faq-a" placeholder="e.g. Yes! We deliver within 5 km. Call us to place an order."></textarea>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-sm" style="margin-top:4px;" onclick="addFaq()">+ Add FAQ</button>
+</div>
+
+<div class="card">
+  <div class="card-title">Your FAQs</div>
+  <div id="faq-list">
+    <p style="color:var(--muted);font-size:14px;">No FAQs added yet.</p>
+  </div>
+</div>
+
+<button class="btn btn-primary" onclick="saveFaqs()">💾 Save FAQs</button>

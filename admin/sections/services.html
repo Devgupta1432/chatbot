@@ -1,0 +1,25 @@
+<!-- ═══════════════════════════════════════
+     SERVICES SECTION
+════════════════════════════════════════ -->
+<div class="panel-header">
+  <h2>Services</h2>
+  <p>These appear when a visitor asks "What do you offer?"</p>
+</div>
+
+<div class="card">
+  <div class="card-title">Add a Service</div>
+  <div style="display:flex;gap:10px;align-items:flex-end;">
+    <div class="form-group" style="flex:1;margin:0;">
+      <label>Service Name</label>
+      <input type="text" id="svc-input" placeholder="e.g. Pizza, Haircut, Consultation…"
+             onkeydown="if(event.key==='Enter') addService()">
+    </div>
+    <button class="btn btn-primary" onclick="addService()">+ Add</button>
+  </div>
+
+  <div id="svc-list" class="tag-list" style="margin-top:18px;min-height:36px;">
+    <!-- tags injected here -->
+  </div>
+</div>
+
+<button class="btn btn-primary" onclick="saveServices()">💾 Save Services</button>

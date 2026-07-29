@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixora Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* ── Import conflict rows ── */
+    .conflict-row {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    .conflict-label { font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px; }
+    .conflict-values { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
+    .conflict-current { font-size:13px;color:var(--muted);flex:1; }
+    .conflict-found   { font-size:13px;color:var(--accent2);flex:1;font-weight:600; }
+    .conflict-arrow   { color:var(--muted);font-size:12px; }
+    .conflict-actions { display:flex;gap:6px;margin-top:8px; }
+    .btn-keep    { background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit; }
+    .btn-replace { background:var(--accent);border:none;color:#fff;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-family:inherit; }
+    .btn-keep:hover    { border-color:var(--accent);color:var(--accent); }
+    .btn-replace:hover { opacity:.85; }
+
+    /* ── Import progress steps ── */
+    .import-steps { display:flex;flex-direction:column;gap:6px;margin-top:12px; }
+    .import-step  { display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted); }
+    .import-step .step-icon { width:18px;text-align:center; }
+    .import-step.done  { color:var(--green); }
+    .import-step.error { color:var(--red); }
+    .import-step.active{ color:var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<div id="sidebar">
+  <div class="sidebar-logo">⚡ Pixo<span>ra</span></div>
+  <div class="sidebar-client">
+    <strong id="sb-name">Loading…</strong>
+    <span id="sb-id" style="font-size:11px;color:var(--muted);display:block;margin-top:2px;">—</span>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-panel="profile"><span class="icon">🏢</span> Profile</button>
+    <button class="nav-item" data-panel="services"><span class="icon">🛍️</span> Services</button>
+    <button class="nav-item" data-panel="faqs"><span class="icon">💬</span> FAQs</button>
+    <button class="nav-item" data-panel="script"><span class="icon">🔗</span> Embed Script</button>
+    <button class="nav-item" data-panel="leads"><span class="icon">📋</span> Leads</button>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="../index.html" style="color:var(--muted);text-decoration:none;font-size:12px;">← Back to Home</a><br><br>
+    <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="logout()">🚪 Log out</span>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div id="main">
+  <div id="topbar">
+    <div class="topbar-title" id="topbar-title">Profile</div>
+    <div class="topbar-right">
+      <span class="status-dot"></span> Firestore
+      &nbsp;·&nbsp;
+      <span id="topbar-client" style="color:var(--accent2);font-family:monospace;font-size:12px;">—</span>
+    </div>
+  </div>
+  <div id="content">
+    <div id="panel-profile"  class="panel active"></div>
+    <div id="panel-services" class="panel"></div>
+    <div id="panel-faqs"     class="panel"></div>
+    <div id="panel-script"   class="panel"></div>
+    <div id="panel-leads"    class="panel"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+const FB_CONFIG = {
+  apiKey:"AIzaSyBmX-TR7eA_K_YzY34AwC4x5HmfwtqPN94",
+  authDomain:"chatbot-e3cec.firebaseapp.com",
+  projectId:"chatbot-e3cec",
+  storageBucket:"chatbot-e3cec.firebasestorage.app",
+  messagingSenderId:"950464568801",
+  appId:"1:950464568801:web:9f7150964b7089048506a0",
+};
+if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+const BACKEND_URL = "http://localhost:3001"; // change to deployed URL when live
+
+let clientId = "";
+let widgetId = "";
+let services = [];
+let faqs     = [];
+let _currentData    = {}; // what's in Firestore right now
+let _importedData   = {}; // what was extracted from website
+let _importWebsiteData = {};
+
+// ── AUTH GUARD ────────────────────────────────────────────────────────────────
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = "../auth/login.html"; return; }
+
+  // Look up clientId from users collection
+  const userSnap = await db.collection("users").doc(user.uid).get();
+  if (!userSnap.exists) { window.location.href = "../auth/login.html"; return; }
+
+  clientId = userSnap.data().clientId;
+  document.getElementById("sb-id").textContent       = clientId;
+  document.getElementById("topbar-client").textContent = clientId;
+
+  await loadSections();
+  await loadClientData();
+});
+
+// ── LOAD SECTION PARTIALS ─────────────────────────────────────────────────────
+async function loadSections() {
+  const files = { profile:"sections/profile.html", services:"sections/services.html",
+                  faqs:"sections/faqs.html", script:"sections/script.html", leads:"sections/leads.html" };
+  await Promise.all(Object.entries(files).map(([key, file]) =>
+    fetch(file).then(r => r.text()).then(html => {
+      document.getElementById("panel-" + key).innerHTML = html;
+    })
+  ));
+}
+
+// ── SIDEBAR NAV ───────────────────────────────────────────────────────────────
+document.querySelectorAll(".nav-item[data-panel]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-" + btn.dataset.panel).classList.add("active");
+    document.getElementById("topbar-title").textContent = btn.textContent.trim();
+    if (btn.dataset.panel === "leads") loadLeads();
+  });
+});
+
+// ── LOAD CLIENT DATA ──────────────────────────────────────────────────────────
+async function loadClientData() {
+  try {
+    const snap = await db.collection("clients").doc(clientId).get();
+    if (!snap.exists) return;
+    const d = snap.data();
+    _currentData = d;
+
+    setVal("p-name",     d.businessName   || "");
+    setVal("p-tagline",  d.tagline        || "");
+    setVal("p-logo",     d.logo           || "");
+    setVal("p-phone",    d.phone          || "");
+    setVal("p-whatsapp", d.whatsapp       || "");
+    setVal("p-email",    d.email          || "");
+    setVal("p-website",  d.website        || "");
+    setVal("p-hours",    d.workingHours   || "");
+    setVal("p-ai",       d.aiInstructions || "");
+
+    const color = d.primaryColor || "#6366f1";
+    setVal("p-color-hex", color);
+    setVal("p-color-picker", color);
+
+    document.getElementById("sb-name").textContent = d.businessName || clientId;
+
+    widgetId = d.widgetId || "";
+
+    // Update script section
+    const scriptEl = document.getElementById("script-client-id");
+    if (scriptEl) scriptEl.textContent = widgetId || clientId;
+
+    services = d.services || [];
+    faqs     = d.faq      || [];
+    renderServices();
+    renderFaqs();
+
+  } catch (e) { console.warn("Load error:", e.message); }
+}
+
+// ── PROFILE SAVE ──────────────────────────────────────────────────────────────
+async function saveProfile() {
+  const data = {
+    businessName:   getVal("p-name"),
+    tagline:        getVal("p-tagline"),
+    logo:           getVal("p-logo"),
+    primaryColor:   getVal("p-color-hex"),
+    phone:          getVal("p-phone"),
+    whatsapp:       getVal("p-whatsapp"),
+    email:          getVal("p-email"),
+    website:        getVal("p-website"),
+    workingHours:   getVal("p-hours"),
+    aiInstructions: getVal("p-ai"),
+    updatedAt:      firebase.firestore.FieldValue.serverTimestamp(),
+  };
+  await save(data);
+  document.getElementById("sb-name").textContent = data.businessName || clientId;
+}
+
+// ── SERVICES ──────────────────────────────────────────────────────────────────
+function addService() {
+  const inp = document.getElementById("svc-input");
+  const val = inp.value.trim();
+  if (!val || services.includes(val)) return;
+  services.push(val); inp.value = "";
+  renderServices();
+}
+function removeService(i) { services.splice(i,1); renderServices(); }
+function renderServices() {
+  const list = document.getElementById("svc-list");
+  if (!list) return;
+  list.innerHTML = services.length
+    ? services.map((s,i) => `<div class="tag">${s}<button onclick="removeService(${i})" title="Remove">×</button></div>`).join("")
+    : "<span style='color:var(--muted);font-size:13px;'>No services added yet.</span>";
+}
+async function saveServices() {
+  await save({ services, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+}
+
+// ── FAQs ──────────────────────────────────────────────────────────────────────
+function addFaq() {
+  const q = document.getElementById("faq-q").value.trim();
+  const a = document.getElementById("faq-a").value.trim();
+  if (!q || !a) return;
+  faqs.push({q,a});
+  document.getElementById("faq-q").value = "";
+  document.getElementById("faq-a").value = "";
+  renderFaqs();
+}
+function removeFaq(i) { faqs.splice(i,1); renderFaqs(); }
+function renderFaqs() {
+  const list = document.getElementById("faq-list");
+  if (!list) return;
+  list.innerHTML = faqs.length
+    ? faqs.map((f,i) => `
+        <div class="faq-item">
+          <div class="faq-item-body">
+            <div class="q">Q: ${f.q}</div>
+            <div class="a">A: ${f.a}</div>
+          </div>
+          <button class="btn btn-danger" onclick="removeFaq(${i})">Remove</button>
+        </div>`).join("")
+    : "<p style='color:var(--muted);font-size:14px;'>No FAQs added yet.</p>";
+}
+async function saveFaqs() {
+  await save({ faq: faqs, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+}
+
+// ── IMPORT WEBSITE ────────────────────────────────────────────────────────────
+async function importWebsite() {
+  const url = document.getElementById("import-url").value.trim();
+  if (!url) return;
+
+  const btn     = document.getElementById("import-btn");
+  const status  = document.getElementById("import-status");
+  const preview = document.getElementById("import-preview");
+
+  btn.disabled = true; btn.textContent = "Importing…";
+  preview.style.display = "none";
+  status.style.display  = "block";
+
+  // Step-by-step progress UI
+  const steps = [
+    { key:"fetch",    label:"Fetching website pages" },
+    { key:"extract",  label:"Extracting business data" },
+    { key:"compare",  label:"Comparing with your current data" },
+  ];
+  status.innerHTML = `<div class="import-steps">${
+    steps.map(s => `<div class="import-step active" id="step-${s.key}">
+      <span class="step-icon">⏳</span> ${s.label}
+    </div>`).join("")
+  }</div>`;
+
+  function stepDone(key)  { const el = document.getElementById("step-"+key); if(el){ el.className="import-step done";  el.querySelector(".step-icon").textContent="✔"; } }
+  function stepError(key) { const el = document.getElementById("step-"+key); if(el){ el.className="import-step error"; el.querySelector(".step-icon").textContent="✖"; } }
+
+  try {
+    const res  = await fetch(`${BACKEND_URL}/api/importWebsite`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ website: url, clientId }),
+    });
+    stepDone("fetch");
+
+    const json = await res.json();
+    if (!res.ok) { stepError("extract"); status.innerHTML += `<p style="color:var(--red);font-size:13px;margin-top:8px;">❌ ${json.error}</p>`; return; }
+
+    _importedData      = json.extracted;
+    _importWebsiteData = json.websiteImport || {};
+    stepDone("extract");
+    stepDone("compare");
+
+    // Build conflict UI — show current vs found for each field
+    const fieldLabels = {
+      businessName:"Business Name", phone:"Phone", email:"Email",
+      whatsapp:"WhatsApp", workingHours:"Working Hours", logo:"Logo URL", website:"Website",
+    };
+
+    const previewBody = document.getElementById("import-preview-body");
+    let conflictHtml = "";
+    let newFieldsHtml = "";
+
+    for (const [key, label] of Object.entries(fieldLabels)) {
+      const found   = _importedData[key];
+      const current = _currentData[key];
+      if (!found) continue;
+
+      if (current && current !== found) {
+        // Conflict — show both, let user choose
+        conflictHtml += `
+          <div class="conflict-row">
+            <div class="conflict-label">${label}</div>
+            <div class="conflict-values">
+              <div class="conflict-current">Current: <span style="color:var(--text);">${current}</span></div>
+              <div class="conflict-arrow">→</div>
+              <div class="conflict-found">Found: ${found}</div>
+            </div>
+            <div class="conflict-actions">
+              <button class="btn-keep"    onclick="resolveField('${key}','keep')">Keep current</button>
+              <button class="btn-replace" onclick="resolveField('${key}','replace','${found.replace(/'/g,"\\'")}')">Use found</button>
+            </div>
+          </div>`;
+      } else if (!current) {
+        // New field — auto-apply, just show it
+        newFieldsHtml += `
+          <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:4px;">${label} <span style="color:var(--green);">NEW</span></div>
+            <div style="font-size:13px;">${found}</div>
+          </div>`;
+      }
+    }
+
+    // Services — always show as new/merged
+    if (_importedData.services?.length) {
+      const newSvcs = _importedData.services.filter(s => !services.includes(s));
+      if (newSvcs.length) {
+        newFieldsHtml += `
+          <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 12px;grid-column:1/-1;">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px;">Services found <span style="color:var(--green);">+${newSvcs.length} new</span></div>
+            <div style="font-size:13px;">${newSvcs.join(" · ")}</div>
+          </div>`;
+      }
+    }
+
+    if (!conflictHtml && !newFieldsHtml) {
+      previewBody.innerHTML = `<p style="color:var(--muted);font-size:13px;">No new information found — your profile is already up to date.</p>`;
+    } else {
+      previewBody.innerHTML =
+        (conflictHtml ? `<div style="grid-column:1/-1;"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">⚠️ Conflicts — choose which to keep:</div>${conflictHtml}</div>` : "") +
+        (newFieldsHtml ? `<div style="grid-column:1/-1;margin-top:${conflictHtml?'16px':'0'};"><div style="font-size:12px;color:var(--muted);margin-bottom:8px;">✅ New fields found:</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${newFieldsHtml}</div></div>` : "");
+    }
+
+    preview.style.display = "block";
+
+  } catch (e) {
+    stepError("fetch");
+    status.innerHTML += `<p style="color:var(--red);font-size:13px;margin-top:8px;">❌ Could not reach the import server. Is the backend running?</p>`;
+  } finally {
+    btn.disabled = false; btn.textContent = "🔍 Import Website";
+  }
+}
+
+// Called when user clicks Keep/Replace on a conflict field
+function resolveField(key, action, foundVal) {
+  if (action === "replace") {
+    _importedData[key] = foundVal;
+  } else {
+    delete _importedData[key]; // don't apply this field
+  }
+  // Visually mark as resolved
+  event.target.closest(".conflict-row").style.opacity = "0.4";
+  event.target.closest(".conflict-row").style.pointerEvents = "none";
+}
+
+async function applyImport() {
+  const d = _importedData;
+
+  // Apply scalar fields to form
+  if (d.businessName) setVal("p-name",     d.businessName);
+  if (d.phone)        setVal("p-phone",    d.phone);
+  if (d.whatsapp)     setVal("p-whatsapp", d.whatsapp);
+  if (d.email)        setVal("p-email",    d.email);
+  if (d.website)      setVal("p-website",  d.website);
+  if (d.workingHours) setVal("p-hours",    d.workingHours);
+  if (d.logo)         setVal("p-logo",     d.logo);
+
+  // Merge services
+  if (d.services?.length) {
+    d.services.forEach(s => { if (!services.includes(s)) services.push(s); });
+    renderServices();
+  }
+
+  // Save to Firestore via backend (includes websiteData)
+  try {
+    const approved = {};
+    ["businessName","phone","whatsapp","email","website","workingHours","logo"].forEach(k => {
+      if (d[k]) approved[k] = d[k];
+    });
+    if (services.length) approved.services = services;
+
+    await fetch(`${BACKEND_URL}/api/saveImport`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ clientId, approved, websiteImport: _importWebsiteData }),
+    });
+  } catch(e) {
+    // Fallback: save directly via client SDK
+    await save({ ...d, websiteImport: _importWebsiteData });
+  }
+
+  dismissImport();
+  toast("Import applied and saved ✓");
+}
+
+function dismissImport() {
+  document.getElementById("import-preview").style.display = "none";
+  document.getElementById("import-status").style.display  = "none";
+  _importedData = {}; _importWebsiteData = {};
+}
+
+// ── SCRIPT COPY — uses widgetId, versioned filename ──────────────────────────────
+const WIDGET_VERSION = "1.0.0";
+function copyScript() {
+  const id    = widgetId || clientId;
+  const param = widgetId ? "id" : "client";
+  const text  = `<script src="https://widget.pixora.in/widget-v1.js?${param}=${id}&v=${WIDGET_VERSION}"><\/script>`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector(".copy-btn");
+    if (btn) { btn.textContent = "\u2714 Copied"; setTimeout(() => btn.textContent = "Copy", 2000); }
+    toast("Script copied! \u2714");
+  });
+}
+
+// ── LEADS ─────────────────────────────────────────────────────────────────────
+async function loadLeads() {
+  const tbody = document.getElementById("leads-tbody");
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:32px;">Loading…</td></tr>`;
+  try {
+    const snap = await db.collection("clients").doc(clientId)
+      .collection("leads").orderBy("timestamp","desc").limit(100).get();
+
+    if (snap.empty) {
+      tbody.innerHTML = `<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:32px;">No leads yet.</td></tr>`;
+      ["stat-total","stat-today","stat-week"].forEach(id => setVal2(id,"0"));
+      return;
+    }
+
+    const now   = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const week  = new Date(today); week.setDate(today.getDate()-7);
+    let todayCount=0, weekCount=0;
+
+    tbody.innerHTML = snap.docs.map(doc => {
+      const d  = doc.data();
+      const ts = d.timestamp?.toDate?.() || null;
+      const dateStr = ts ? ts.toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}) : "—";
+      if (ts) { if(ts>=today) todayCount++; if(ts>=week) weekCount++; }
+      let page = "—";
+      try { page = d.page ? `<a href="${d.page}" target="_blank" style="color:var(--accent2);font-size:12px;">${new URL(d.page).hostname}</a>` : "—"; } catch(e){}
+      return `<tr>
+        <td><strong>${d.name||"—"}</strong></td>
+        <td>${d.phone||"—"}</td>
+        <td>${d.email||"—"}</td>
+        <td style="color:var(--muted);font-size:13px;">${d.message||"—"}</td>
+        <td>${page}</td>
+        <td style="color:var(--muted);font-size:13px;">${dateStr}</td>
+      </tr>`;
+    }).join("");
+
+    setVal2("stat-total", snap.size);
+    setVal2("stat-today", todayCount);
+    setVal2("stat-week",  weekCount);
+
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" style="color:var(--red);text-align:center;padding:32px;">Error: ${e.message}</td></tr>`;
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+async function save(data) {
+  try {
+    await db.collection("clients").doc(clientId).set(data, { merge:true });
+    toast("Saved ✓");
+  } catch(e) { toast("Save failed: "+e.message, true); }
+}
+
+function getVal(id)      { const el=document.getElementById(id); return el?el.value.trim():""; }
+function setVal(id,val)  { const el=document.getElementById(id); if(el) el.value=val; }
+function setVal2(id,val) { const el=document.getElementById(id); if(el) el.textContent=val; }
+
+function logout() {
+  auth.signOut().then(() => {
+    localStorage.removeItem("pixora_client_id");
+    window.location.href = "../auth/login.html";
+  });
+}
+
+function toast(msg, isError=false) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.background = isError ? "var(--red)" : "var(--green)";
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+</script>
+</body>
+</html>

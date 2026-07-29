@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixora Widget – Live Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fafafa;
+      color: #222;
+    }
+
+    nav {
+      background: #e53935;
+      color: #fff;
+      padding: 16px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    nav strong { font-size: 20px; letter-spacing: 0.5px; }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 28px;
+      font-size: 14px;
+    }
+
+    nav ul li { cursor: pointer; opacity: 0.9; }
+    nav ul li:hover { opacity: 1; text-decoration: underline; }
+
+    .hero {
+      background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%);
+      color: #fff;
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .hero h1 { font-size: 42px; margin-bottom: 12px; }
+    .hero p  { font-size: 18px; opacity: 0.9; margin-bottom: 28px; }
+
+    .hero-btn {
+      background: #fff;
+      color: #e53935;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .section { padding: 60px 40px; max-width: 1000px; margin: 0 auto; }
+
+    .section h2 { font-size: 28px; margin-bottom: 24px; color: #e53935; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+
+    .card .icon { font-size: 32px; margin-bottom: 10px; }
+    .card h3    { font-size: 15px; color: #333; }
+
+    .info-bar {
+      background: #fff3e0;
+      border-left: 4px solid #e53935;
+      padding: 20px 28px;
+      border-radius: 8px;
+      margin: 40px auto;
+      max-width: 700px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #555;
+    }
+
+    .info-bar strong { color: #e53935; }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+      color: #aaa;
+      border-top: 1px solid #eee;
+    }
+
+    /* ── Demo switcher ── */
+    #demo-switcher {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #fff;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      z-index: 99998;
+    }
+
+    #demo-switcher p { font-weight: 700; margin-bottom: 8px; color: #333; }
+
+    #demo-switcher button {
+      display: block;
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 7px 12px;
+      border: 1.5px solid #ddd;
+      border-radius: 6px;
+      background: #fafafa;
+      cursor: pointer;
+      font-size: 12px;
+      text-align: left;
+      transition: background 0.15s;
+    }
+
+    #demo-switcher button:hover { background: #f0f0f0; }
+    #demo-switcher button.active { border-color: #e53935; background: #fff5f5; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- Fake client website -->
+  <nav>
+    <strong>🍽 ABC Restaurant</strong>
+    <ul>
+      <li>Menu</li>
+      <li>About</li>
+      <li>Reservations</li>
+      <li>Contact</li>
+    </ul>
+  </nav>
+
+  <div class="hero">
+    <h1>Authentic Flavours,<br>Delivered Fresh</h1>
+    <p>North Indian · Chinese · Continental · Home Delivery</p>
+    <button class="hero-btn">View Menu</button>
+  </div>
+
+  <div class="section">
+    <h2>What We Serve</h2>
+    <div class="cards">
+      <div class="card"><div class="icon">🍛</div><h3>North Indian</h3></div>
+      <div class="card"><div class="icon">🍜</div><h3>Chinese</h3></div>
+      <div class="card"><div class="icon">🥩</div><h3>Continental</h3></div>
+      <div class="card"><div class="icon">🛵</div><h3>Home Delivery</h3></div>
+      <div class="card"><div class="icon">🎉</div><h3>Catering</h3></div>
+    </div>
+
+    <div class="info-bar">
+      <strong>⏰ Hours:</strong> 10 AM – 11 PM, All Days &nbsp;|&nbsp;
+      <strong>📞 Call:</strong> +91 98765 43210 &nbsp;|&nbsp;
+      <strong>📍 Location:</strong> 12, Food Street, Mumbai
+    </div>
+  </div>
+
+  <footer>© 2025 ABC Restaurant. Website powered by <strong>Pixora</strong>.</footer>
+
+  <!--
+    THIS IS THE ONLY LINE THE CLIENT NEEDS TO ADD TO THEIR WEBSITE:
+    <script src="https://widget.pixora.in/widget.js?client=YOUR_CLIENT_ID"></script>
+  -->
+  <script src="widget.js?client=pixora"></script>
+
+  <!-- Demo switcher — not part of the widget, just for this demo page -->
+  <div id="demo-switcher">
+    <p>🔄 Switch Client Demo</p>
+    <button class="active" onclick="switchClient('pixora', this)">🚀 Pixora</button>
+    <button onclick="switchClient('abc123', this)">🍽 ABC Restaurant</button>
+    <button onclick="switchClient('gym99', this)">💪 FitZone Gym</button>
+  </div>
+
+  <script>
+    function switchClient(id, btn) {
+      document.getElementById("pixora-widget")?.remove();
+      document.querySelectorAll('script[src*="widget.js"]').forEach(s => s.remove());
+      document.querySelectorAll('link[href*="widget.css"]').forEach(l => l.remove());
+      document.querySelectorAll("#demo-switcher button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const s = document.createElement("script");
+      s.src = `widget.js?client=${id}&t=${Date.now()}`;
+      document.body.appendChild(s);
+    }
+  </script>
+
+</body>
+</html>

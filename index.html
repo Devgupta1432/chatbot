@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixora — AI Chatbot Platform</title>
+  <link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">⚡ Pixo<span>ra</span></div>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#integration">Integration</a></li>
+      <li><a href="auth/login.html" class="nav-cta">Dashboard →</a></li>
+    </ul>
+  </nav>
+
+  <!-- SECTIONS (loaded dynamically) -->
+  <div id="section-hero"></div>
+  <div id="section-how"></div>
+  <div id="section-features"></div>
+  <div id="section-integration"></div>
+
+  <!-- FOOTER -->
+  <footer>
+    Built with ❤️ by <strong>Pixora</strong> · One platform, infinite clients.
+  </footer>
+
+  <script>
+    // Load each section HTML into its placeholder
+    const sections = [
+      { id: "section-hero",        file: "sections/hero.html" },
+      { id: "section-how",         file: "sections/how-it-works.html" },
+      { id: "section-features",    file: "sections/features.html" },
+      { id: "section-integration", file: "sections/integration.html" },
+    ];
+
+    sections.forEach(({ id, file }) => {
+      fetch(file)
+        .then(r => r.text())
+        .then(html => {
+          const el = document.getElementById(id);
+          el.innerHTML = html;
+          // Execute any <script> tags inside the loaded HTML
+          el.querySelectorAll("script").forEach(old => {
+            const s = document.createElement("script");
+            s.textContent = old.textContent;
+            document.body.appendChild(s);
+          });
+        })
+        .catch(() => console.warn("Could not load", file));
+    });
+  </script>
+</body>
+</html>

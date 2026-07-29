@@ -1,0 +1,169 @@
+<!-- ═══════════════════════════════════════════════════
+     HERO SECTION
+     Include in index.html via <section id="hero">
+════════════════════════════════════════════════════ -->
+<section id="hero" style="
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  padding: 80px 48px;
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 64px;
+">
+
+  <!-- LEFT: Copy -->
+  <div style="flex:1; min-width:0;">
+    <div class="badge" style="margin-bottom:20px;">🚀 No-code AI Chatbot Platform</div>
+
+    <h1 style="font-size:52px;font-weight:900;line-height:1.1;margin-bottom:20px;">
+      One chatbot.<br>
+      <span style="color:var(--accent)">Every business.</span>
+    </h1>
+
+    <p style="font-size:18px;color:var(--muted);margin-bottom:36px;max-width:460px;line-height:1.7;">
+      Pixora lets any business launch a fully branded AI chatbot in minutes —
+      no code, no JSON, no Firestore. Just fill a form and paste one script tag.
+    </p>
+
+    <div style="display:flex;gap:14px;flex-wrap:wrap;">
+      <a href="auth/login.html" class="btn btn-primary">
+        Open Dashboard →
+      </a>
+      <a href="#how-it-works" class="btn btn-ghost">
+        See How It Works
+      </a>
+    </div>
+
+    <!-- Social proof strip -->
+    <div style="margin-top:48px;display:flex;gap:32px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:26px;font-weight:800;color:var(--text)">5 min</div>
+        <div style="font-size:13px;color:var(--muted)">Setup time</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div>
+        <div style="font-size:26px;font-weight:800;color:var(--text)">1 line</div>
+        <div style="font-size:13px;color:var(--muted)">Of code to paste</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div>
+        <div style="font-size:26px;font-weight:800;color:var(--text)">∞</div>
+        <div style="font-size:13px;color:var(--muted)">Clients, one platform</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Live chatbot mockup -->
+  <div style="flex:1;min-width:0;display:flex;justify-content:center;">
+    <div id="hero-chat-preview" style="
+      width:340px;
+      background:#1a1a1a;
+      border:1px solid #2a2a2a;
+      border-radius:18px;
+      overflow:hidden;
+      box-shadow:0 24px 80px rgba(99,102,241,0.18);
+    ">
+      <!-- Chat header -->
+      <div style="background:var(--accent);padding:16px 18px;display:flex;align-items:center;gap:12px;">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
+        <div>
+          <div style="font-weight:700;color:#fff;font-size:15px;">Pixora AI</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.8);">🟢 Online – replies instantly</div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="hero-messages" style="padding:16px;display:flex;flex-direction:column;gap:10px;min-height:260px;background:#111;">
+
+        <div class="hero-bot-msg" style="
+          background:#1e1e1e;border:1px solid #2a2a2a;
+          border-radius:12px 12px 12px 4px;
+          padding:10px 14px;font-size:13px;color:#e8e8e8;
+          max-width:85%;align-self:flex-start;
+        ">
+          Good morning! 👋 Welcome to <strong>ABC Restaurant</strong>.<br>
+          Your 24/7 Digital Assistant
+        </div>
+
+        <div class="hero-bot-msg" style="
+          background:#1e1e1e;border:1px solid #2a2a2a;
+          border-radius:12px 12px 12px 4px;
+          padding:10px 14px;font-size:13px;color:#e8e8e8;
+          max-width:85%;align-self:flex-start;
+        ">
+          How can I help you today?
+        </div>
+
+        <!-- Quick replies -->
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+          <span style="border:1.5px solid var(--accent);color:var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;" onclick="heroReply('Our Services', this)">Our Services</span>
+          <span style="border:1.5px solid var(--accent);color:var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;" onclick="heroReply('Working Hours', this)">Working Hours</span>
+          <span style="border:1.5px solid var(--accent);color:var(--accent2);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;" onclick="heroReply('Contact Us', this)">Contact Us</span>
+        </div>
+      </div>
+
+      <!-- Input bar -->
+      <div style="padding:12px 14px;border-top:1px solid #2a2a2a;display:flex;gap:8px;background:#141414;">
+        <input id="hero-input" type="text" placeholder="Type a message…" style="
+          flex:1;background:#1e1e1e;border:1.5px solid #2a2a2a;
+          border-radius:24px;padding:9px 16px;font-size:13px;
+          color:#e8e8e8;outline:none;
+        " onkeydown="if(event.key==='Enter') heroSend()">
+        <button onclick="heroSend()" style="
+          width:38px;height:38px;border-radius:50%;background:var(--accent);
+          border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+        ">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const heroReplies = {
+    "Our Services": "We offer: 🍕 Pizza, 🍔 Burgers, 🛵 Delivery, 🎉 Catering",
+    "Working Hours": "⏰ We're open: <strong>10 AM – 11 PM</strong>, all days!",
+    "Contact Us": "📞 <strong>+91 98765 43210</strong><br>📧 abc@restaurant.com",
+  };
+
+  function heroReply(label, el) {
+    const msgs = document.getElementById("hero-messages");
+    el.parentElement.remove();
+    // User bubble
+    const u = document.createElement("div");
+    u.style.cssText = "background:var(--accent);color:#fff;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:13px;max-width:85%;align-self:flex-end;margin-left:auto;";
+    u.textContent = label;
+    msgs.appendChild(u);
+    // Bot reply
+    setTimeout(() => {
+      const b = document.createElement("div");
+      b.style.cssText = "background:#1e1e1e;border:1px solid #2a2a2a;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:#e8e8e8;max-width:85%;align-self:flex-start;";
+      b.innerHTML = heroReplies[label] || "Let me connect you with our team!";
+      msgs.appendChild(b);
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 500);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function heroSend() {
+    const inp = document.getElementById("hero-input");
+    const text = inp.value.trim();
+    if (!text) return;
+    inp.value = "";
+    const msgs = document.getElementById("hero-messages");
+    const u = document.createElement("div");
+    u.style.cssText = "background:var(--accent);color:#fff;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:13px;max-width:85%;align-self:flex-end;margin-left:auto;";
+    u.textContent = text;
+    msgs.appendChild(u);
+    setTimeout(() => {
+      const b = document.createElement("div");
+      b.style.cssText = "background:#1e1e1e;border:1px solid #2a2a2a;border-radius:12px 12px 12px 4px;padding:10px 14px;font-size:13px;color:#e8e8e8;max-width:85%;align-self:flex-start;";
+      b.innerHTML = "I'm here to help! Try asking about our <strong>services</strong> or <strong>hours</strong>. 😊";
+      msgs.appendChild(b);
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 500);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+</script>

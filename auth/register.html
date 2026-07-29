@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — Pixora</title>
+  <style>
+    :root {
+      --bg:#0a0a0a;--surface:#111;--card:#181818;--border:#252525;
+      --accent:#6366f1;--accent2:#818cf8;--text:#e8e8e8;--muted:#666;
+      --green:#22c55e;--red:#ef4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+    .logo{font-size:22px;font-weight:800;margin-bottom:32px;}
+    .logo span{color:var(--accent);}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px 32px;width:100%;max-width:420px;}
+    h2{font-size:22px;font-weight:800;margin-bottom:6px;}
+    .sub{font-size:14px;color:var(--muted);margin-bottom:28px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+    label{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);}
+    input{background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;font-family:inherit;width:100%;}
+    input:focus{border-color:var(--accent);}
+    input.error{border-color:var(--red);}
+    .btn{width:100%;padding:12px;border-radius:8px;border:none;font-size:15px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;transition:opacity .2s;font-family:inherit;margin-top:8px;}
+    .btn:hover{opacity:.85;}
+    .btn:disabled{opacity:.5;cursor:not-allowed;}
+    .link-row{text-align:center;font-size:13px;color:var(--muted);margin-top:20px;}
+    .link-row a{color:var(--accent2);text-decoration:none;}
+    .link-row a:hover{text-decoration:underline;}
+    #success-box{display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:24px;text-align:center;margin-top:20px;}
+    #success-box .tick{font-size:36px;margin-bottom:12px;}
+    #success-box h3{font-size:18px;font-weight:800;margin-bottom:8px;color:var(--green);}
+    #success-box p{font-size:13px;color:var(--muted);margin-bottom:16px;}
+    .id-box{background:var(--bg);border:1.5px solid var(--accent);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:15px;color:var(--accent2);display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;}
+    .copy-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600;font-family:inherit;}
+    .err-msg{font-size:13px;color:var(--red);margin-top:8px;display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 14px;}
+  </style>
+</head>
+<body>
+  <div class="logo">⚡ Pixo<span>ra</span></div>
+  <div class="card">
+    <h2>Create your account</h2>
+    <p class="sub">Get your chatbot live in 5 minutes.</p>
+
+    <div id="register-form">
+      <div class="form-group">
+        <label>Business Name *</label>
+        <input type="text" id="r-name" placeholder="e.g. ABC Restaurant">
+      </div>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="r-email" placeholder="you@yourbusiness.com">
+      </div>
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" id="r-pass" placeholder="Min 6 characters">
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="r-phone" placeholder="+91 98765 43210">
+      </div>
+      <div class="err-msg" id="r-error"></div>
+      <button class="btn" id="r-btn" onclick="register()">Create Account →</button>
+    </div>
+
+    <div id="success-box">
+      <div class="tick">🎉</div>
+      <h3>Account Created!</h3>
+      <p>Your Client ID — paste this into your website script tag.</p>
+      <div class="id-box">
+        <span id="generated-id">—</span>
+        <button class="copy-btn" onclick="copyId()">Copy</button>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:20px;">
+        📌 Your widget script tag uses <code style="color:var(--accent2);">?id=YOUR_WIDGET_ID</code> — not your client ID.
+      </p>
+      <button class="btn" onclick="goToDashboard()">Open My Dashboard →</button>
+    </div>
+
+    <div class="link-row">Already have an account? <a href="login.html">Log in →</a></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script>
+    const FB_CONFIG = {
+      apiKey:"AIzaSyBmX-TR7eA_K_YzY34AwC4x5HmfwtqPN94",
+      authDomain:"chatbot-e3cec.firebaseapp.com",
+      projectId:"chatbot-e3cec",
+      storageBucket:"chatbot-e3cec.firebasestorage.app",
+      messagingSenderId:"950464568801",
+      appId:"1:950464568801:web:9f7150964b7089048506a0",
+    };
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    let newClientId = "";
+
+    function slugify(name) {
+      return name.toLowerCase().replace(/[^a-z0-9\s]/g,"").trim().replace(/\s+/g,"");
+    }
+
+    // Generate unguessable widget ID: pxt_ + 10 random alphanumeric chars
+    function generateWidgetId() {
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let id = "pxt_";
+      for (let i = 0; i < 10; i++) id += chars[Math.floor(Math.random() * chars.length)];
+      return id;
+    }
+
+    async function generateClientId(name) {
+      const base = slugify(name);
+      const first = await db.collection("clients").doc(base).get();
+      if (!first.exists) return base;
+      let counter = 2;
+      while (true) {
+        const snap = await db.collection("clients").doc(base + counter).get();
+        if (!snap.exists) return base + counter;
+        counter++;
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("r-error");
+      el.textContent = msg; el.style.display = "block";
+    }
+
+    async function register() {
+      document.getElementById("r-error").style.display = "none";
+      const name  = document.getElementById("r-name").value.trim();
+      const email = document.getElementById("r-email").value.trim();
+      const pass  = document.getElementById("r-pass").value;
+      const phone = document.getElementById("r-phone").value.trim();
+
+      document.getElementById("r-name").classList.toggle("error", !name);
+      document.getElementById("r-email").classList.toggle("error", !email);
+      document.getElementById("r-pass").classList.toggle("error", pass.length < 6);
+      if (!name || !email || pass.length < 6) return showError("Please fill all required fields (password min 6 chars).");
+
+      const btn = document.getElementById("r-btn");
+      btn.disabled = true; btn.textContent = "Creating account…";
+
+      try {
+        // 1. Create Firebase Auth user
+        const cred = await auth.createUserWithEmailAndPassword(email, pass);
+        const uid  = cred.user.uid;
+
+        // 2. Generate IDs
+        newClientId       = await generateClientId(name);
+        const widgetId    = generateWidgetId();
+
+        // 3. Save to Firestore
+        await db.collection("clients").doc(newClientId).set({
+          uid, businessName: name, email, phone,
+          widgetId,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // 4. Store uid → clientId mapping
+        await db.collection("users").doc(uid).set({ clientId: newClientId });
+
+        // 5. Register widget for direct O(1) lookup (widgets/{widgetId} → clientId)
+        await db.collection("widgets").doc(widgetId).set({ clientId: newClientId });
+
+        // 6. Session
+        localStorage.setItem("pixora_client_id",   newClientId);
+        localStorage.setItem("pixora_client_name",  name);
+
+        document.getElementById("register-form").style.display = "none";
+        document.getElementById("generated-id").textContent = newClientId;
+        document.getElementById("success-box").style.display = "block";
+
+      } catch (e) {
+        btn.disabled = false; btn.textContent = "Create Account →";
+        const msgs = {
+          "auth/email-already-in-use": "This email is already registered. Please log in.",
+          "auth/invalid-email": "Invalid email address.",
+          "auth/weak-password": "Password is too weak.",
+        };
+        showError(msgs[e.code] || e.message);
+      }
+    }
+
+    function copyId() {
+      navigator.clipboard.writeText(newClientId);
+      const btn = document.querySelector(".copy-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy", 2000);
+    }
+
+    function goToDashboard() {
+      window.location.href = "../admin/dashboard.html";
+    }
+  </script>
+</body>
+</html>

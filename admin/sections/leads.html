@@ -1,0 +1,48 @@
+<!-- ═══════════════════════════════════════
+     LEADS SECTION
+════════════════════════════════════════ -->
+<div class="panel-header">
+  <h2>Leads</h2>
+  <p>Every visitor who submits their details through your chatbot appears here.</p>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid" id="leads-stats">
+  <div class="stat-card">
+    <div class="stat-val" id="stat-total">—</div>
+    <div class="stat-label">Total Leads</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" id="stat-today">—</div>
+    <div class="stat-label">Today</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-val" id="stat-week">—</div>
+    <div class="stat-label">This Week</div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+    <div class="card-title" style="margin:0;">All Leads</div>
+    <button class="btn btn-ghost btn-sm" onclick="loadLeads()">↻ Refresh</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Message</th>
+          <th>Page</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="leads-tbody">
+        <tr><td colspan="6" style="color:var(--muted);text-align:center;padding:32px;">Loading leads…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

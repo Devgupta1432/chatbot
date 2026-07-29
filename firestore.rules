@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function ownsClient(clientId) {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.clientId == clientId;
+    }
+
+    // ── users/{uid} ────────────────────────────────────────────────────────
+    // Only the owner can read/write their own user doc.
+    match /users/{uid} {
+      allow read, write: if isAuth() && request.auth.uid == uid;
+    }
+
+    // ── clients/{clientId} ────────────────────────────────────────────────
+    // Public read — widget needs it without auth.
+    // Create — any authenticated user can create (registration flow).
+    // Update/delete — only the owning user.
+    match /clients/{clientId} {
+      allow read: if true;
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid;
+      allow update: if ownsClient(clientId);
+      allow delete: if ownsClient(clientId);
+
+      // ── leads ────────────────────────────────────────────────────────────
+      // Widget visitors (unauthenticated) can create leads with name + phone.
+      // Only the owning dashboard user can read/update/delete.
+      match /leads/{leadId} {
+        allow create: if
+          request.resource.data.keys().hasAll(["name", "phone", "timestamp"]) &&
+          request.resource.data.name  is string &&
+          request.resource.data.phone is string &&
+          request.resource.data.name.size()  <= 100 &&
+          request.resource.data.phone.size() <= 30;
+        allow read, update, delete: if ownsClient(clientId);
+      }
+
+      // ── analytics ────────────────────────────────────────────────────────
+      // Widget (unauthenticated) can write analytics events.
+      // Only the owning dashboard user can read.
+      match /analytics/{eventId} {
+        allow create: if
+          request.resource.data.keys().hasAll(["event", "timestamp"]) &&
+          request.resource.data.event is string &&
+          request.resource.data.event.size() <= 60;
+        allow read: if ownsClient(clientId);
+      }
+    }
+
+    // ── widgets/{widgetId} ────────────────────────────────────────────────
+    // Public read — widget resolves widgetId → clientId.
+    // Write only from backend Admin SDK (bypasses rules).
+    // Allow authenticated create so registration can write it directly too.
+    match /widgets/{widgetId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update, delete: if false;
+    }
+
+    // ── Deny everything else ──────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
