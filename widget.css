@@ -1,19 +1,30 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── ALL selectors scoped to #pixora-widget — nothing leaks to the host page ── */
 
 #pixora-widget {
+  all: initial;
   position: fixed;
   bottom: 28px;
   right: 28px;
-  z-index: 99999;
+  z-index: 2147483647;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1e1e2e;
+  box-sizing: border-box;
+}
+
+#pixora-widget *, #pixora-widget *::before, #pixora-widget *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 /* ── Toggle button ─────────────────────────────────────────────────────────── */
-#pixora-toggle {
+#pixora-widget #pixora-toggle {
+  all: unset;
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -27,19 +38,17 @@
     inset 0 1px 0 rgba(255,255,255,0.25);
 }
 
-/* Pulse ring */
-#pixora-toggle::before {
+#pixora-widget #pixora-toggle::before {
   content: '';
   position: absolute;
   inset: -6px;
   border-radius: 50%;
   border: 2px solid currentColor;
   opacity: 0.3;
-  animation: pulseRing 2.5s ease-out infinite;
+  animation: px-pulseRing 2.5s ease-out infinite;
 }
 
-/* Glow */
-#pixora-toggle::after {
+#pixora-widget #pixora-toggle::after {
   content: '';
   position: absolute;
   inset: -2px;
@@ -50,17 +59,24 @@
   z-index: -1;
 }
 
-@keyframes pulseRing {
+@keyframes px-pulseRing {
   0%   { transform: scale(1);    opacity: 0.35; }
   70%  { transform: scale(1.35); opacity: 0; }
   100% { transform: scale(1.35); opacity: 0; }
 }
 
-#pixora-toggle:hover { transform: scale(1.1) rotate(-8deg); }
-#pixora-toggle svg { width: 27px; height: 27px; fill: #fff; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2)); }
+#pixora-widget #pixora-toggle:hover { transform: scale(1.1) rotate(-8deg); }
+
+#pixora-widget #pixora-toggle svg {
+  width: 27px;
+  height: 27px;
+  fill: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  display: block;
+}
 
 /* ── Notification dot ──────────────────────────────────────────────────────── */
-#pixora-notif-dot {
+#pixora-widget #pixora-notif-dot {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -69,16 +85,16 @@
   background: #ef4444;
   border-radius: 50%;
   border: 2.5px solid #fff;
-  animation: notifPop 0.4s cubic-bezier(.34,1.56,.64,1);
+  animation: px-notifPop 0.4s cubic-bezier(.34,1.56,.64,1);
 }
 
-@keyframes notifPop {
+@keyframes px-notifPop {
   from { transform: scale(0); }
   to   { transform: scale(1); }
 }
 
 /* ── Chat box ──────────────────────────────────────────────────────────────── */
-#pixora-box {
+#pixora-widget #pixora-box {
   width: 380px;
   height: 580px;
   border-radius: 24px;
@@ -88,22 +104,22 @@
   margin-bottom: 16px;
   background: #ffffff;
   transform-origin: bottom right;
-  animation: popIn 0.32s cubic-bezier(.34,1.56,.64,1);
+  animation: px-popIn 0.32s cubic-bezier(.34,1.56,.64,1);
   box-shadow:
     0 32px 80px rgba(0,0,0,0.22),
     0 8px 24px rgba(0,0,0,0.12),
     0 0 0 1px rgba(0,0,0,0.06);
 }
 
-@keyframes popIn {
+@keyframes px-popIn {
   from { transform: scale(0.75) translateY(24px); opacity: 0; }
   to   { transform: scale(1)    translateY(0);    opacity: 1; }
 }
 
-#pixora-box.hidden { display: none; }
+#pixora-widget #pixora-box.hidden { display: none; }
 
 /* ── Header ────────────────────────────────────────────────────────────────── */
-#pixora-header {
+#pixora-widget #pixora-header {
   padding: 18px 20px;
   display: flex;
   align-items: center;
@@ -114,8 +130,7 @@
   flex-shrink: 0;
 }
 
-/* Mesh gradient overlay */
-#pixora-header::before {
+#pixora-widget #pixora-header::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -125,8 +140,7 @@
   pointer-events: none;
 }
 
-/* Decorative circles */
-#pixora-header::after {
+#pixora-widget #pixora-header::after {
   content: '';
   position: absolute;
   top: -28px;
@@ -138,7 +152,7 @@
   pointer-events: none;
 }
 
-.px-header-circle2 {
+#pixora-widget .px-header-circle2 {
   position: absolute;
   bottom: -40px;
   left: 60px;
@@ -149,7 +163,7 @@
   pointer-events: none;
 }
 
-#pixora-header img {
+#pixora-widget #pixora-header img {
   width: 44px;
   height: 44px;
   border-radius: 50%;
@@ -158,14 +172,16 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   flex-shrink: 0;
   position: relative;
+  display: block;
+  max-width: none;
 }
 
-/* Online indicator on avatar */
-.px-avatar-wrap {
+#pixora-widget .px-avatar-wrap {
   position: relative;
   flex-shrink: 0;
 }
-.px-avatar-wrap::after {
+
+#pixora-widget .px-avatar-wrap::after {
   content: '';
   position: absolute;
   bottom: 1px;
@@ -178,8 +194,13 @@
   box-shadow: 0 0 0 2px rgba(34,197,94,0.4);
 }
 
-#pixora-header-info { flex: 1; min-width: 0; position: relative; }
-#pixora-header-info strong {
+#pixora-widget #pixora-header-info {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+#pixora-widget #pixora-header-info strong {
   display: block;
   font-size: 15.5px;
   font-weight: 700;
@@ -187,37 +208,44 @@
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: -0.1px;
+  color: #fff;
 }
-#pixora-header-info .px-status {
+
+#pixora-widget #pixora-header-info .px-status {
   font-size: 12px;
   opacity: 0.9;
   display: flex;
   align-items: center;
   gap: 5px;
   margin-top: 2px;
+  color: #fff;
 }
-.px-status-dot {
+
+#pixora-widget .px-status-dot {
   width: 7px;
   height: 7px;
   background: #4ade80;
   border-radius: 50%;
   display: inline-block;
+  flex-shrink: 0;
   box-shadow: 0 0 6px rgba(74,222,128,0.8);
-  animation: statusPulse 2s ease-in-out infinite;
+  animation: px-statusPulse 2s ease-in-out infinite;
 }
-@keyframes statusPulse {
+
+@keyframes px-statusPulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.5; }
 }
 
-#pixora-header-actions {
+#pixora-widget #pixora-header-actions {
   display: flex;
   align-items: center;
   gap: 6px;
   position: relative;
 }
 
-#pixora-close {
+#pixora-widget #pixora-close {
+  all: unset;
   background: rgba(255,255,255,0.18);
   border: 1px solid rgba(255,255,255,0.25);
   color: #fff;
@@ -231,17 +259,18 @@
   font-size: 15px;
   line-height: 1;
   transition: background 0.18s, transform 0.18s;
-  backdrop-filter: blur(4px);
 }
-#pixora-close:hover {
+
+#pixora-widget #pixora-close:hover {
   background: rgba(255,255,255,0.32);
   transform: rotate(90deg);
 }
 
 /* ── Messages area ─────────────────────────────────────────────────────────── */
-#pixora-messages {
+#pixora-widget #pixora-messages {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 16px 14px;
   display: flex;
   flex-direction: column;
@@ -253,47 +282,43 @@
   scroll-behavior: smooth;
 }
 
-#pixora-messages::-webkit-scrollbar { width: 3px; }
-#pixora-messages::-webkit-scrollbar-track { background: transparent; }
-#pixora-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+#pixora-widget #pixora-messages::-webkit-scrollbar { width: 3px; }
+#pixora-widget #pixora-messages::-webkit-scrollbar-track { background: transparent; }
+#pixora-widget #pixora-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
 /* ── Message bubbles ───────────────────────────────────────────────────────── */
-.px-msg {
+#pixora-widget .px-msg {
   max-width: 78%;
   padding: 11px 15px;
   font-size: 14px;
   line-height: 1.58;
   word-break: break-word;
-  animation: msgIn 0.22s cubic-bezier(.34,1.56,.64,1);
+  animation: px-msgIn 0.22s cubic-bezier(.34,1.56,.64,1);
   position: relative;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-@keyframes msgIn {
+@keyframes px-msgIn {
   from { opacity: 0; transform: translateY(10px) scale(0.95); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
-.px-msg.bot {
+#pixora-widget .px-msg.bot {
   background: #ffffff;
   border-radius: 4px 18px 18px 18px;
-  box-shadow:
-    0 2px 10px rgba(0,0,0,0.07),
-    0 0 0 1px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
   align-self: flex-start;
   color: #1e1e2e;
 }
 
-.px-msg.user {
+#pixora-widget .px-msg.user {
   color: #fff;
   border-radius: 18px 18px 4px 18px;
   align-self: flex-end;
-  box-shadow:
-    0 4px 16px rgba(0,0,0,0.18),
-    inset 0 1px 0 rgba(255,255,255,0.2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
-/* Timestamp on hover */
-.px-msg::after {
+#pixora-widget .px-msg::after {
   content: attr(data-time);
   position: absolute;
   bottom: -18px;
@@ -304,21 +329,22 @@
   transition: opacity 0.2s;
   pointer-events: none;
 }
-.px-msg.bot::after  { left: 4px; }
-.px-msg.user::after { right: 4px; }
-.px-msg:hover::after { opacity: 1; }
+#pixora-widget .px-msg.bot::after  { left: 4px; }
+#pixora-widget .px-msg.user::after { right: 4px; }
+#pixora-widget .px-msg:hover::after { opacity: 1; }
 
 /* ── Quick replies ─────────────────────────────────────────────────────────── */
-.px-quick-replies {
+#pixora-widget .px-quick-replies {
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 4px;
   padding-left: 2px;
-  animation: msgIn 0.22s ease;
+  animation: px-msgIn 0.22s ease;
 }
 
-.px-quick-btn {
+#pixora-widget .px-quick-btn {
+  all: unset;
   border: 1.5px solid;
   background: rgba(255,255,255,0.9);
   border-radius: 20px;
@@ -326,21 +352,21 @@
   font-size: 12.5px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(.34,1.56,.64,1);
-  font-family: inherit;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-  backdrop-filter: blur(4px);
+  display: inline-block;
 }
 
-.px-quick-btn:hover {
+#pixora-widget .px-quick-btn:hover {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 6px 16px rgba(0,0,0,0.14);
 }
 
-.px-quick-btn:active { transform: scale(0.97); }
+#pixora-widget .px-quick-btn:active { transform: scale(0.97); }
 
 /* ── Input area ────────────────────────────────────────────────────────────── */
-#pixora-input-area {
+#pixora-widget #pixora-input-area {
   display: flex;
   align-items: center;
   padding: 12px 14px;
@@ -350,46 +376,47 @@
   flex-shrink: 0;
 }
 
-#pixora-input {
+#pixora-widget #pixora-input {
+  all: unset;
   flex: 1;
   border: 1.5px solid #e2e8f0;
   border-radius: 26px;
   padding: 11px 18px;
   font-size: 14px;
-  outline: none;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   background: #f8fafc;
   color: #1e1e2e;
-  font-family: inherit;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  display: block;
+  width: 100%;
 }
 
-#pixora-input::placeholder { color: #a0aec0; }
+#pixora-widget #pixora-input::placeholder { color: #a0aec0; }
 
-#pixora-input:focus {
+#pixora-widget #pixora-input:focus {
   border-color: var(--px-color, #6366f1);
   background: #fff;
   box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+  outline: none;
 }
 
-#pixora-send {
+#pixora-widget #pixora-send {
+  all: unset;
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
-  box-shadow:
-    0 4px 14px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.25);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.25);
   position: relative;
   overflow: hidden;
 }
 
-#pixora-send::before {
+#pixora-widget #pixora-send::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -397,16 +424,23 @@
   pointer-events: none;
 }
 
-#pixora-send:hover {
+#pixora-widget #pixora-send:hover {
   transform: scale(1.12) rotate(-5deg);
   box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
-#pixora-send:active { transform: scale(0.95); }
-#pixora-send svg { width: 18px; height: 18px; fill: #fff; position: relative; }
+#pixora-widget #pixora-send:active { transform: scale(0.95); }
+
+#pixora-widget #pixora-send svg {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
+  position: relative;
+  display: block;
+}
 
 /* ── Footer ────────────────────────────────────────────────────────────────── */
-#pixora-footer {
+#pixora-widget #pixora-footer {
   text-align: center;
   font-size: 11px;
   color: #b0b9cc;
@@ -417,16 +451,16 @@
   flex-shrink: 0;
 }
 
-#pixora-footer a {
+#pixora-widget #pixora-footer a {
   color: inherit;
   text-decoration: none;
   font-weight: 700;
   transition: color 0.15s;
 }
-#pixora-footer a:hover { color: var(--px-color, #6366f1); }
+#pixora-widget #pixora-footer a:hover { color: var(--px-color, #6366f1); }
 
 /* ── Typing indicator ──────────────────────────────────────────────────────── */
-.px-typing {
+#pixora-widget .px-typing {
   display: flex;
   gap: 5px;
   align-items: center;
@@ -436,27 +470,28 @@
   box-shadow: 0 2px 10px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
   align-self: flex-start;
   width: fit-content;
-  animation: msgIn 0.22s ease;
+  animation: px-msgIn 0.22s ease;
 }
 
-.px-typing span {
+#pixora-widget .px-typing span {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: #d1d5db;
-  animation: typingBounce 1.2s infinite ease-in-out;
+  display: block;
+  animation: px-typingBounce 1.2s infinite ease-in-out;
 }
 
-.px-typing span:nth-child(2) { animation-delay: 0.2s; }
-.px-typing span:nth-child(3) { animation-delay: 0.4s; }
+#pixora-widget .px-typing span:nth-child(2) { animation-delay: 0.2s; }
+#pixora-widget .px-typing span:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes typingBounce {
+@keyframes px-typingBounce {
   0%, 60%, 100% { transform: translateY(0);    background: #d1d5db; }
   30%            { transform: translateY(-8px); background: var(--px-color, #6366f1); }
 }
 
 /* ── Lead form ─────────────────────────────────────────────────────────────── */
-#pixora-lead-form {
+#pixora-widget #pixora-lead-form {
   display: flex;
   flex-direction: column;
   gap: 9px;
@@ -468,35 +503,41 @@
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
 }
 
-#pixora-lead-form input {
+#pixora-widget #pixora-lead-form input {
+  all: unset;
+  display: block;
+  width: 100%;
   border: 1.5px solid #e2e8f0;
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 13px;
-  outline: none;
   background: #fff;
   color: #1e1e2e;
-  font-family: inherit;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-#pixora-lead-form input::placeholder { color: #a0aec0; }
+#pixora-widget #pixora-lead-form input::placeholder { color: #a0aec0; }
 
-#pixora-lead-form input:focus {
+#pixora-widget #pixora-lead-form input:focus {
   border-color: var(--px-color, #6366f1);
   box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+  outline: none;
 }
 
-#pixora-lead-form button {
-  border: none;
+#pixora-widget #pixora-lead-form button {
+  all: unset;
+  display: block;
+  width: 100%;
+  text-align: center;
   border-radius: 10px;
   padding: 11px;
   color: #fff;
   font-size: 13.5px;
   cursor: pointer;
   font-weight: 700;
-  font-family: inherit;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   transition: opacity 0.15s, transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s;
   box-shadow: 0 4px 14px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.2);
   margin-top: 2px;
@@ -504,7 +545,7 @@
   overflow: hidden;
 }
 
-#pixora-lead-form button::before {
+#pixora-widget #pixora-lead-form button::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -512,18 +553,18 @@
   pointer-events: none;
 }
 
-#pixora-lead-form button:hover {
+#pixora-widget #pixora-lead-form button:hover {
   opacity: 0.92;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.22);
 }
 
-#pixora-lead-form button:active { transform: translateY(0); }
+#pixora-widget #pixora-lead-form button:active { transform: translateY(0); }
 
 /* ── Mobile ────────────────────────────────────────────────────────────────── */
 @media (max-width: 440px) {
   #pixora-widget { bottom: 16px; right: 16px; }
-  #pixora-box {
+  #pixora-widget #pixora-box {
     width: calc(100vw - 32px);
     height: calc(100svh - 90px);
     max-height: 600px;
