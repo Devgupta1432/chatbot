@@ -424,10 +424,11 @@ function dismissImport() {
 
 // ── SCRIPT COPY — uses widgetId, versioned filename ──────────────────────────────
 const WIDGET_VERSION = "1.0.0";
+const WIDGET_BASE_URL = "https://pixora-chatbot.netlify.app";
 function copyScript() {
   const id    = widgetId || clientId;
   const param = widgetId ? "id" : "client";
-  const text  = `<script src="https://widget.pixora.in/widget-v1.js?${param}=${id}&v=${WIDGET_VERSION}"><\/script>`;
+  const text  = `<script src="${WIDGET_BASE_URL}/widget-v1.js?${param}=${id}&v=${WIDGET_VERSION}"><\/script>`;
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.querySelector(".copy-btn");
     if (btn) { btn.textContent = "\u2714 Copied"; setTimeout(() => btn.textContent = "Copy", 2000); }
